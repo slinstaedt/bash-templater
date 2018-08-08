@@ -31,6 +31,15 @@
 
 readonly PROGNAME=$(basename $0)
 
+case "$OSTYPE" in
+    *darwin*)
+        BSD=1
+        ;;
+    *linux*)
+        GNU=1
+        ;;
+esac
+
 config_file="<none>"
 print_only="false"
 silent="false"
