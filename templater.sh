@@ -47,7 +47,7 @@ where:
     -s, --silent
         Don't print warning messages (for example if no variables are found)
     -d, --delimiter
-        Specify a delimiter to separate output from multiple files (defaults to '---')
+        Specify a delimiter to separate output from multiple files (defaults to '\n---\n')
 
 examples:
     VAR1=Something VAR2=1.2.3 ${PROGNAME} test.txt 
@@ -67,7 +67,7 @@ fi
 
 function parse_args() {
   template_path="${1}"
-  delimiter="---" 
+  delimiter="\n---\n" 
   if [ "$#" -ne 0 ]; then
       while [ "$#" -gt 0 ]
       do
@@ -192,7 +192,7 @@ elif [[ -d "$template_path" ]]; then
   for i in $(seq 0 $len); do
     main "${templates[i]}"
     if [ $i -lt $len ]; then
-      echo -e "\n$delimiter\n"
+      echo -e "$delimiter"
     fi
   done
 fi
