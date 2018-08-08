@@ -1,31 +1,41 @@
-# BASH Templater
 
-Very simple templating system that replace `{{VAR}}` by `$VAR` environment value.
+BASH Templater
 
-Supports default values by writting `{{VAR=value}}` in the template.
+Very simple templating system that replace {{VAR}} by $VAR environment value Supports default values by writting {{VAR=value}} in the template
+Author
 
-[![Build Status](https://travis-ci.org/lavoiesl/bash-templater.svg?branch=master)](https://travis-ci.org/lavoiesl/bash-templater)
+Sébastien Lavoie github@lavoie.sl
 
-## Author
+Johan Haleby
 
-Sébastien Lavoie <github@lavoie.sl>
+See http://code.haleby.se/2015/11/20/simple-templating-engine-in-bash/ and http://blog.lavoie.sl/2012/11/simple-templating-system-using-bash.html for more details
+Installation
 
-See http://blog.lavoie.sl/2012/11/simple-templating-system-using-bash.html for other details
+To install templater in linux type:
 
-## Usage
+sudo curl -L https://raw.githubusercontent.com/johanhaleby/bash-templater/master/templater.sh -o /usr/local/bin/templater
+sudo chmod +x /usr/local/bin/templater
 
-```sh
-# Passing arguments directly
-VAR=value templater.sh template
+Usage
 
-# Evaluate /tmp/foo and pass those variables to the template
-# Useful for defining variables in a file
-# Parentheses are important for not polluting the current shell
-(set -a && . /tmp/foo && templater.sh template)
+VAR=value templater template
 
-# A variant that does NOT pass current env variables to the templater
-sh -c "set -a && . /tmp/foo && templater.sh template"
-```
+Read variables from file:
 
-## Examples
+templater template -f variables.txt
+
+e.g.:
+
+# variables.txt
+# The author
+AUTHOR=Johan
+# The version
+VERSION=1.2.3
+
+Don't print any warning messages:
+
+templater template -f variables.txt -s
+
+Examples
+
 See examples/
