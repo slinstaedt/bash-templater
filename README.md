@@ -1,41 +1,93 @@
 
-BASH Templater
+# BASH Templater
 
-Very simple templating system that replace {{VAR}} by $VAR environment value Supports default values by writting {{VAR=value}} in the template
-Author
+Very simple templating system that replaces 
+`{{VAR}}` in templatenfiles with the value of
+the environment variable `$VAR` environment value
+Supports default values by writting {{VAR=value}} 
+in templates
 
-Sébastien Lavoie github@lavoie.sl
+See  
+http://code.haleby.se/2015/11/20/simple-templating-engine-in-bash/  
+and/or  
+http://blog.lavoie.sl/2012/11/simple-templating-system-using-bash.html  
+for some blog posts about usage
 
-Johan Haleby
 
-See http://code.haleby.se/2015/11/20/simple-templating-engine-in-bash/ and http://blog.lavoie.sl/2012/11/simple-templating-system-using-bash.html for more details
-Installation
+# Installation
 
-To install templater in linux type:
+To install templater on linux or mac type:
 
-sudo curl -L https://raw.githubusercontent.com/johanhaleby/bash-templater/master/templater.sh -o /usr/local/bin/templater
-sudo chmod +x /usr/local/bin/templater
+```
+$ mkdir -p ~/.local/bin/
+$ sudo curl -L https://raw.githubusercontent.com/owenstranathan/bash-templater/master/templater.sh -o ~/.local/bin/templater
+$ sudo chmod +x ~/.local/bin/templater
+```
 
-Usage
+Alternately if you have the program `install` 
+on your system you can use that with curl
+```
+$ mkdir -p ~/.local/bin/
+$ curl https://raw.githubusercontent.com/owenstranathan/bash-templater/master/templater.sh
+$ install templater.sh ~/.local/bin/templater
+```
+if you haven't configured ~/.local/bin to be a part of your path I recommed doing that
 
-VAR=value templater template
+
+# Usage
+
+```
+$ VAR=value templater template-file
+```
 
 Read variables from file:
 
-templater template -f variables.txt
+```
+$ templater template -f variables.txt
+```
+
+If you have a file names `.env` in your calling directory, templater will automatically
+load those into its environment
 
 e.g.:
 
-# variables.txt
-# The author
-AUTHOR=Johan
-# The version
-VERSION=1.2.3
+``` yaml
 
-Don't print any warning messages:
+# nginx.yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nginx
+spec:
+  replicas: 2
+  selector:
+    app: nginx
+  template:
+    metadata:
+      name: nginx
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+```
 
-templater template -f variables.txt -s
+
+To stop templater from printing warning messages use:
+`$ templater <template> -s`
+
 
 Examples
 
-See examples/
+See [examples](`bash-templater/tree/master/examples/`)
+
+#### Author(s)
+
+[Sébastien Lavoie](https://github.com/lavoiesl/bash-templater)
+
+[Johan Haleby](https://github.com/johanhaleby/bash-templater)
+
+Owen Stranathan 
