@@ -82,7 +82,7 @@ To stop templater from printing warning messages use:
 
 Examples
 
-See [examples](`bash-templater/tree/master/examples/`)
+See [examples](`/tree/master/examples/`)
 
 #### Author(s)
 
@@ -90,4 +90,4 @@ See [examples](`bash-templater/tree/master/examples/`)
 
 [Johan Haleby](https://github.com/johanhaleby/bash-templater)
 
-Owen Stranathan 
+[Owen Stranathan](https://github.com/owenstranathan/bash-templater)
