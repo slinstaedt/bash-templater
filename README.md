@@ -71,6 +71,14 @@ Templater does not use `getopts` to get options so stringing options like `-ps` 
 
 See [examples](examples/)
 
+#### Testing
+
+Use my simple testing script [bashtest](github.com/owenstranathan/bashtest)
+
+run this in the main project directory
+
+`$ bashtest`
+
 #### More Resources
 
 

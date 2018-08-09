@@ -1,6 +1,7 @@
 #!/bin/bash
 
-[[ $TRACE ]] && set -x
+TESTING_DIR="$(dirname "$BASH_SOURCE")"
+PACKAGE_DIR="$(dirname "$TESTING_DIR")"
 
 function check() {
     if [[ $1 -eq 0 ]]; then
@@ -13,7 +14,7 @@ function check() {
 
 function test_simple(){
     (
-        cd examples/simple/ 
+        cd "$PACKAGE_DIR/examples/simple/"
         diff -u <(bash ../../templater.sh nginx.yaml.tmpl) nginx.yaml
         return $?
     )
@@ -21,7 +22,7 @@ function test_simple(){
 
 function test_defaults(){
     (
-        cd examples/defaults/ 
+        cd "$PACKAGE_DIR/examples/defaults/"
         diff -u <(USER=nobody DOMAIN=example.com ../../templater.sh vhost-php.tpl.conf) vhost-php.conf
         return $?
     )
@@ -30,15 +31,15 @@ function test_defaults(){
 
 function test_templates_dir(){
     (
-        cd examples/templates-dir 
+        cd "$PACKAGE_DIR/examples/templates-dir"
         diff -u <(bash ../../templater.sh templates -f variables.txt) render.yaml
-        check $?
+        return $?
     )
 }
 
 function test_print_only(){
     (
-        cd examples/simple
+        cd "$PACKAGE_DIR/examples/simple"
         diff -u <(bash ../../templater.sh nginx.yaml.tmpl -p) .env
         return $?
     )
@@ -46,25 +47,26 @@ function test_print_only(){
 
 function test_silent(){
 
-    mkdir -p test_silent_temp
+    mkdir -p "test_silent_temp"
     trap "rm -rf test_silent_temp" INT TERM EXIT ERR
     (
         cd test_silent_temp
         echo "{{TEST_SILENT_NOT_SET}} is not set" > test.tmpl
-        diff <(bash ../templater.sh test.tmpl -s) <(echo " is not set")
+        diff <(bash $PACKAGE_DIR/templater.sh test.tmpl -s) <(echo " is not set")
         return $?
     )
 }
 
-test_simple
-check $?
-test_defaults
-check $?
-test_templates_dir
-check $?
-test_print_only
-check $?
-test_silent
-check $?
-test_silent
-check $?
+# test_simple
+# check $?
+# test_defaults
+# check $?
+# test_templates_dir
+# check $?
+# test_print_only
+# check $?
+# test_silent
+# check $?
+# test_silent
+# check $?
+
