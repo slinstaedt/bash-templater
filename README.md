@@ -82,7 +82,7 @@ To stop templater from printing warning messages use:
 
 Examples
 
-See [examples](`/examples/`)
+See [examples](examples/)
 
 #### Author(s)
 
