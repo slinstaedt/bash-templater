@@ -2,16 +2,10 @@
 # BASH Templater
 
 Very simple templating system that replaces 
-`{{VAR}}` in templatenfiles with the value of
+`{{VAR}}` in template files with the value of
 the environment variable `$VAR` environment value
 Supports default values by writting {{VAR=value}} 
 in templates
-
-See  
-http://code.haleby.se/2015/11/20/simple-templating-engine-in-bash/  
-and/or  
-http://blog.lavoie.sl/2012/11/simple-templating-system-using-bash.html  
-for some blog posts about usage
 
 
 ## Installation
@@ -46,7 +40,7 @@ Read variables from file:
 $ templater <template> -f variables.txt
 ```
 
-If you have a file names `.env` in your calling directory, templater will automatically
+If you have a file named `.env` in your calling directory, templater will automatically
 load the variables specified in you `.env` file into its environment
 
 Example:
@@ -54,9 +48,11 @@ Example:
 
 To stop templater from printing warning messages
 
-`$ templater <template> -s`
+```
+$ templater <template> -s`
+```
 
-To make templater run over an entire directory of templates
+Templater will also read files from a directory
 
 `$ templater <template-dir>`
 
@@ -67,9 +63,22 @@ but you can set this to be anything you like by using the `-d` option for exampl
 
 will separate template file with the string `####DELIMITER####`
 
+##### NOTE
+
+Templater does not use `getopts` to get options so stringing options like `-ps` is **not** supported.
+
 #### Examples
 
 See [examples](examples/)
+
+#### More Resources
+
+
+See  
+http://code.haleby.se/2015/11/20/simple-templating-engine-in-bash/  
+and/or  
+http://blog.lavoie.sl/2012/11/simple-templating-system-using-bash.html  
+for some blog posts about usage
 
 #### Author(s)
 

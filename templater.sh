@@ -40,10 +40,6 @@ case "$OSTYPE" in
         ;;
 esac
 
-config_file="<none>"
-print_only="false"
-silent="false"
-
 usage="${PROGNAME} [-h] [-d] [-f] [-s] -- 
 
 where:
@@ -90,11 +86,14 @@ function load_env_file() {
 }
 
 function parse_args() {
-  template_path="${1}"
-  delimiter="\n---\n" 
-  if [ "$#" -ne 0 ]; then
-      while [ "$#" -gt 0 ]
-      do
+    template_path="${1}"
+    delimiter="\n---\n" 
+    print_only="false"
+    silent="false"
+
+    if [ "$#" -ne 0 ]; then
+        while [ "$#" -gt 0 ]
+        do
             case "$1" in
                 -h|--help)
                     echo "$usage"
@@ -205,10 +204,18 @@ function main() {
         exit 0
     fi
 
+    if [[ "$print_only" == "true" ]]; then
+    for var in $vars; do
+        value=$(var_value "$var")
+        echo "$var=$value"
+    done
+    exit 0
+    fi
+
     # Replace all {{VAR}} by $VAR value
     for var in $vars; do
         value="$(var_value "${var}")"
-        if [[ -z "$value" ]]; then
+        if [[ -z "$value" ]] && [[ "$silent" == "false" ]]; then
             echo "Warning: $var is not defined and no default is set, replacing by empty" >&2
         fi
 
