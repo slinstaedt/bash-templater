@@ -132,7 +132,7 @@ function main() {
     [[ $TRACE ]] && set -x
 
     template="$1"
-    vars=$(grep -oE '\{\{\s*[A-Za-z0-9_]+\s*\}\}' "$template" | sort | uniq | sed -e 's/^{{//' -e 's/}}$//')
+    vars=$(grep -oE '\{\{[[:space:]]*[A-Za-z0-9_]+[[:space:]]*\}\}' "$template" | sort | uniq | sed -e 's/^{{//' -e 's/}}$//')
 
     if [[ -z "$vars" ]] && [[ "$silent" == "false" ]]; then
         echo "Warning: No variable was found in $template, syntax is {{VAR}}" >&2
@@ -215,9 +215,9 @@ function main() {
         # Escape slashes
         value="$(escape_chars "${value}" "\\" '/' ' ')";
         replaces+=("-e")
-        replaces+=("s/{{\s*${var}\s*}}/${value}/g")
+        replaces+=("s/{{[[:space:]]*${var}[[:space:]]*}}/${value}/g")
     done
-
+    
     sed "${replaces[@]}" "${template}"
 
 }
