@@ -1,18 +1,29 @@
 #!/bin/bash
 
-result=0
-diff -u <(USER=nobody DOMAIN=example.com ./templater.sh examples/vhost-php.tpl.conf) examples/vhost-php.conf > /dev/null
-result=$((result+$?))
-diff -u <(./templater.sh examples/load-vars-from-file.tmpl --file examples/vars.txt) examples/load-vars-from-file.txt > /dev/null
-result=$((result+$?))
-diff -u <(./templater.sh examples/load-vars-from-file.tmpl --file examples/vars.txt) examples/load-vars-from-file.txt > /dev/null
-result=$((result+$?))
-diff -u <(TEST1="TEST 1" TEST2="TEST 2" ./templater.sh examples/dir.tmpl) examples/dir.txt > /dev/null
-result=$((result+$?))
+[[ $TRACE ]] && set -x
 
-if [[ $result -eq 0 ]]; then
-    echo OK
-else
-    echo Differences found
-    exit 1
-fi
+function check() {
+    if [[ $1 -eq 0 ]]; then
+        echo OK
+    else
+        echo Differences found
+        exit 1
+    fi
+}
+
+(
+    cd examples/composition/ 
+    diff -u <(USER=nobody DOMAIN=example.com ../../templater.sh vhost-php.tpl.conf) vhost-php.conf
+    check $?
+)
+# (
+#     cd examples/render-dir 
+#     diff -u <(bash ../../templater.sh templates -f variables.txt) render.yaml
+#     check $?
+# )
+# (
+#     cd examples/simple/ 
+#     diff -u <(bash ../../templater.sh nginx.yaml.tmpl) nginx.yaml
+#     check $?
+# )
+

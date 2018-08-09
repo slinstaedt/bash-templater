@@ -14,7 +14,7 @@ http://blog.lavoie.sl/2012/11/simple-templating-system-using-bash.html
 for some blog posts about usage
 
 
-# Installation
+## Installation
 
 To install templater on linux or mac type:
 
@@ -34,53 +34,40 @@ $ install templater.sh ~/.local/bin/templater
 if you haven't configured ~/.local/bin to be a part of your path I recommed doing that
 
 
-# Usage
+## Usage
 
 ```
-$ VAR=value templater template-file
+$ VAR=value templater <template>
 ```
 
 Read variables from file:
 
 ```
-$ templater template -f variables.txt
+$ templater <template> -f variables.txt
 ```
 
 If you have a file names `.env` in your calling directory, templater will automatically
-load those into its environment
+load the variables specified in you `.env` file into its environment
 
-e.g.:
-
-``` yaml
-
-# nginx.yaml
-apiVersion: v1
-kind: ReplicationController
-metadata:
-  name: nginx
-spec:
-  replicas: 2
-  selector:
-    app: nginx
-  template:
-    metadata:
-      name: nginx
-      labels:
-        app: nginx
-    spec:
-      containers:
-      - name: nginx
-        image: nginx
-        ports:
-        - containerPort: 80
-```
+Example:
 
 
-To stop templater from printing warning messages use:
+To stop templater from printing warning messages
+
 `$ templater <template> -s`
 
+To make templater run over an entire directory of templates
 
-Examples
+`$ templater <template-dir>`
+
+Templater will by default render the templates witha default delimiter of `\n---\n`
+but you can set this to be anything you like by using the `-d` option for example
+
+`$ templater <template-dir> -d "####DELIMITER####"`
+
+will separate template file with the string `####DELIMITER####`
+
+#### Examples
 
 See [examples](examples/)
 

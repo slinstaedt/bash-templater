@@ -129,6 +129,7 @@ function parse_args() {
 }
 
 function main() {
+    [[ $TRACE ]] && set -x
 
     template="$1"
     vars=$(grep -oE '\{\{\s*[A-Za-z0-9_]+\s*\}\}' "$template" | sort | uniq | sed -e 's/^{{//' -e 's/}}$//')
@@ -137,8 +138,8 @@ function main() {
         echo "Warning: No variable was found in $template, syntax is {{VAR}}" >&2
     fi
 
-    if [[ -f "./.env" ]]; then
-        load_env_file "./.env"
+    if [[ -f ".env" ]]; then
+        load_env_file ".env"
     fi
 
     var_value() {
