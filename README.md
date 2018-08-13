@@ -73,7 +73,7 @@ See [examples](examples/)
 
 #### Testing
 
-Use my simple testing script [bashtest](github.com/owenstranathan/bashtest)
+Use my simple testing script [bashtest](https://github.com/owenstranathan/bashtest)
 
 run this in the main project directory
 
