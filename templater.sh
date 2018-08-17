@@ -127,10 +127,38 @@ function parse_args() {
 
 }
 
+
+##
+# Escape custom characters in a string
+# Example: escape "ab'\c" '\' "'"   ===>  ab\'\\c
+#
+function escape_chars() {
+    local content="${1}"
+    shift
+    for char in "$@"; do
+        content="${content//${char}/\\${char}}"
+    done
+    echo "${content}"
+}
+
+function echo_var() {
+    local var="${1}"
+    local content="${2}"
+    local escaped="$(escape_chars "${content}" "\\" '"')"
+    echo "${var}=\"${escaped}\""
+}
+
+function var_value() {
+    var="${1}"
+    eval echo \$"${var}"
+}
+
 function main() {
     [[ $TRACE ]] && set -x
 
     template="$1"
+    # exprs=$(grep -oE '\{%.*%\}' "$template")
+    # echo "$exprs"
     vars=$(grep -oE '\{\{[[:space:]]*[A-Za-z0-9_]+[[:space:]]*\}\}' "$template" | sort | uniq | sed -e 's/^{{//' -e 's/}}$//')
 
     if [[ -z "$vars" ]] && [[ "$silent" == "false" ]]; then
@@ -140,34 +168,6 @@ function main() {
     if [[ -f ".env" ]]; then
         load_env_file ".env"
     fi
-
-    var_value() {
-        var="${1}"
-        eval echo \$"${var}"
-    }
-
-    ##
-    # Escape custom characters in a string
-    # Example: escape "ab'\c" '\' "'"   ===>  ab\'\\c
-    #
-    function escape_chars() {
-        local content="${1}"
-        shift
-
-        for char in "$@"; do
-            content="${content//${char}/\\${char}}"
-        done
-
-        echo "${content}"
-    }
-
-    function echo_var() {
-        local var="${1}"
-        local content="${2}"
-        local escaped="$(escape_chars "${content}" "\\" '"')"
-
-        echo "${var}=\"${escaped}\""
-    }
 
     declare -a replaces
     replaces=()
