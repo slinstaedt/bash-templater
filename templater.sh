@@ -85,6 +85,10 @@ function load_env_file() {
     fi
 }
 
+function errcho() {
+    echo "$@" 1>&2
+}
+
 function parse_args() {
     template_path="${1}"
     delimiter="\n---\n" 
@@ -127,7 +131,6 @@ function parse_args() {
 
 }
 
-
 ##
 # Escape custom characters in a string
 # Example: escape "ab'\c" '\' "'"   ===>  ab\'\\c
@@ -150,16 +153,39 @@ function echo_var() {
 
 function var_value() {
     var="${1}"
-    eval echo \$"${var}"
+    eval echo \$"${var}"/
 }
 
-function main() {
-    [[ $TRACE ]] && set -x
+function replace_ifs() {
+    if_start_re="\{%[[:space:]]*if(.*?(?=%\}))%\}"
+    if_body_re="(.*?(?=\{%))"
+    if_else_re="(\{%[[:space:]]*else[[:space:]]*%\})?"
+    if_end_re="\{%[[:space:]]*endif[[:space:]]*%\}"
+    if_re="$if_start_re$if_body_re$if_else_re$if_body_re$if_end_re" 
+    echo $if_re
+    if [[ $TEMPLATE_CONTENT =~ $if_re ]]; then
+        echo "${BASH_REMATCH[@]}"
+        len=$((${#BASH_REMATCH[@]}-1))
+        for i in $(seq 0 $len); do
+            echo $i
+            echo "${BASH_REMATCH[i]}"
+        done
+        # match="${BASH_REMATCH[0]}"
+        # condition="${BASH_REMATCH[1]}"
+        # case_true="${BASH_REMATCH[2]}"
+        # case_false="${BASH_REMATCH[4]}"
+        # if eval "$condition"; then
+            # replace="$case_true"
+        # else
+            # replace="$case_false"
+        # fi
+        # TEMPLATE_CONTENT="${TEMPLATE_CONTENT/"$match"/$replace}"
+    fi
+}
 
-    template="$1"
-    # exprs=$(grep -oE '\{%.*%\}' "$template")
-    # echo "$exprs"
-    vars=$(grep -oE '\{\{[[:space:]]*[A-Za-z0-9_]+[[:space:]]*\}\}' "$template" | sort | uniq | sed -e 's/^{{//' -e 's/}}$//')
+function render(){
+
+    vars=$(echo "$TEMPLATE_CONTENT" | grep -oE '\{\{[[:space:]]*[A-Za-z0-9_]+[[:space:]]*\}\}' | sort | uniq | sed -e 's/^{{//' -e 's/}}$//')
 
     if [[ -z "$vars" ]] && [[ "$silent" == "false" ]]; then
         echo "Warning: No variable was found in $template, syntax is {{VAR}}" >&2
@@ -175,7 +201,7 @@ function main() {
     # Reads default values defined as {{VAR=value}} and delete those lines
     # There are evaluated, so you can do {{PATH=$HOME}} or {{PATH=`pwd`}}
     # You can even reference variables defined in the template before
-    defaults=$(grep -oE '^\{\{[A-Za-z0-9_]+=.+\}\}$' "${template}" | sed -e 's/^{{//' -e 's/}}$//')
+    defaults=$(echo "$TEMPLATE_CONTENT" | grep -oE '^\{\{[A-Za-z0-9_]+=.+\}\}$' | sed -e 's/^{{//' -e 's/}}$//')
     IFS=$'\n'
     for default in $defaults; do
         var=$(echo "${default}" | grep -oE "^[A-Za-z0-9_]+")
@@ -225,7 +251,21 @@ function main() {
         replaces+=("s/{{[[:space:]]*${var}[[:space:]]*}}/${value}/g")
     done
     
-    sed "${replaces[@]}" "${template}"
+    echo "$TEMPLATE_CONTENT" | sed "${replaces[@]}"
+
+}
+
+function main() {
+    [[ $TRACE ]] && set -x
+    local template_path
+    template_path="$1"
+    TEMPLATE_CONTENT="$(cat "$1")"
+    # replace_defaults
+    # replace_vars
+    replace_ifs
+    # render
+    # echo "$TEMPLATE_CONTENT"
+    # exit 1
 
 }
 
