@@ -153,34 +153,44 @@ function echo_var() {
 
 function var_value() {
     var="${1}"
-    eval echo \$"${var}"/
+    eval echo \$"${var}"
+}
+
+function perl_match() {
+    perl - "$TEMPLATE_CONTENT" $1 <<'EOF'
+    my $string = shift; 
+    my $index = shift;
+    my $regex = qr/\s*{%\s*if\s*(.*?(?=%}))%}(.*?(?={%))(\s*{%\s*else\s*%})?(.*?(?={%))\s*{%\s*endif\s*%}/sp;
+    my @matches = ( $string =~ /$regex/ );
+    if (! @matches) {
+        exit 1;
+    }
+    if ( $index ==   -1 ){
+        # if ($string =~ /$regex/ ) {
+        print "${^MATCH}";
+        # }
+        # print "${^PREMATCH}";
+        # print "${^POSTMATCH}";
+    }
+    else{
+        print "@matches[$index]";
+    }
+EOF
 }
 
 function replace_ifs() {
-    if_start_re="\{%[[:space:]]*if(.*?(?=%\}))%\}"
-    if_body_re="(.*?(?=\{%))"
-    if_else_re="(\{%[[:space:]]*else[[:space:]]*%\})?"
-    if_end_re="\{%[[:space:]]*endif[[:space:]]*%\}"
-    if_re="$if_start_re$if_body_re$if_else_re$if_body_re$if_end_re" 
-    echo $if_re
-    if [[ $TEMPLATE_CONTENT =~ $if_re ]]; then
-        echo "${BASH_REMATCH[@]}"
-        len=$((${#BASH_REMATCH[@]}-1))
-        for i in $(seq 0 $len); do
-            echo $i
-            echo "${BASH_REMATCH[i]}"
-        done
-        # match="${BASH_REMATCH[0]}"
-        # condition="${BASH_REMATCH[1]}"
-        # case_true="${BASH_REMATCH[2]}"
-        # case_false="${BASH_REMATCH[4]}"
-        # if eval "$condition"; then
-            # replace="$case_true"
-        # else
-            # replace="$case_false"
-        # fi
-        # TEMPLATE_CONTENT="${TEMPLATE_CONTENT/"$match"/$replace}"
-    fi
+    while perl_match -1 /dev/null 2>&1; do
+        match=$(perl_match -1)
+        condition=$(perl_match 0)
+        case_true=$(perl_match 1)
+        case_false=$(perl_match 3)
+        if eval "$condition"; then
+            replace="$case_true"
+        else
+            replace="$case_false"
+        fi
+        TEMPLATE_CONTENT="${TEMPLATE_CONTENT/"$match"/$replace}"
+    done
 }
 
 function render(){
@@ -239,6 +249,7 @@ function render(){
     fi
 
     # Replace all {{VAR}} by $VAR value
+
     for var in $vars; do
         value="$(var_value "${var}")"
         if [[ -z "$value" ]] && [[ "$silent" == "false" ]]; then
@@ -260,11 +271,9 @@ function main() {
     local template_path
     template_path="$1"
     TEMPLATE_CONTENT="$(cat "$1")"
-    # replace_defaults
-    # replace_vars
-    replace_ifs
-    # render
+    replace_ifs > /dev/null 2>&1
     # echo "$TEMPLATE_CONTENT"
+    render
     # exit 1
 
 }
