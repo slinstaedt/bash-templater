@@ -4,10 +4,10 @@ spec:
         spec:
         {% if [[ $SPIDER == "play" ]] %}
             args: ['master', '4', 'play']
-        {% else %}
+        {% else       %}
             args: ['crawl', '{{SPIDER}}']
-        {% endif %}
+        {%        endif %}
 
-        {% if [[ $HOMELESS ]] %}
-            No Home
-        {% endif %}
+{% if [[ ! $OMIT_SERVICE ]] %}
+....Service junk here....
+{%    endif    %}

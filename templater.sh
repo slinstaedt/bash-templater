@@ -180,10 +180,10 @@ EOF
 
 function replace_ifs() {
     while perl_match -1 /dev/null 2>&1; do
-        match=$(perl_match -1)
-        condition=$(perl_match 0)
-        case_true=$(perl_match 1)
-        case_false=$(perl_match 3)
+        match=$(perl_match -1) > /dev/null
+        condition=$(perl_match 0) > /dev/null
+        case_true=$(perl_match 1) > /dev/null
+        case_false=$(perl_match 3) > /dev/null
         if eval "$condition"; then
             replace="$case_true"
         else
@@ -194,15 +194,13 @@ function replace_ifs() {
 }
 
 function render(){
-
     vars=$(echo "$TEMPLATE_CONTENT" | grep -oE '\{\{[[:space:]]*[A-Za-z0-9_]+[[:space:]]*\}\}' | sort | uniq | sed -e 's/^{{//' -e 's/}}$//')
 
-    if [[ -z "$vars" ]] && [[ "$silent" == "false" ]]; then
-        echo "Warning: No variable was found in $template, syntax is {{VAR}}" >&2
-    fi
-
-    if [[ -f ".env" ]]; then
-        load_env_file ".env"
+    if [[ -z "$vars" ]]; then
+        if [[ "$silent" == "false" ]]; then
+            echo "Warning: No variable was found in $template, syntax is {{VAR}}" >&2
+        fi
+        return 0
     fi
 
     declare -a replaces
@@ -262,7 +260,7 @@ function render(){
         replaces+=("s/{{[[:space:]]*${var}[[:space:]]*}}/${value}/g")
     done
     
-    echo "$TEMPLATE_CONTENT" | sed "${replaces[@]}"
+    TEMPLATE_CONTENT="$(echo "$TEMPLATE_CONTENT" | sed "${replaces[@]}")"
 
 }
 
@@ -271,9 +269,12 @@ function main() {
     local template_path
     template_path="$1"
     TEMPLATE_CONTENT="$(cat "$1")"
+    if [[ -f ".env" ]]; then
+        load_env_file ".env"
+    fi
     replace_ifs > /dev/null 2>&1
-    # echo "$TEMPLATE_CONTENT"
     render
+    echo "$TEMPLATE_CONTENT"
     # exit 1
 
 }

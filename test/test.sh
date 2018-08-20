@@ -57,6 +57,14 @@ function test_silent(){
     )
 }
 
+function test_conditionals(){
+    (
+        cd "$PACKAGE_DIR/examples/conditionals"
+        diff -u <(bash ../../templater.sh conditions.tmpl.yaml -s) render.yaml
+        return $?
+    )
+}
+
 # test_simple
 # check $?
 # test_defaults
