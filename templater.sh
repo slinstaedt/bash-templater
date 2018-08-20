@@ -85,6 +85,10 @@ function load_env_file() {
     fi
 }
 
+function errcho() {
+    echo "$@" 1>&2
+}
+
 function parse_args() {
     template_path="${1}"
     delimiter="\n---\n" 
@@ -127,7 +131,6 @@ function parse_args() {
 
 }
 
-
 ##
 # Escape custom characters in a string
 # Example: escape "ab'\c" '\' "'"   ===>  ab\'\\c
@@ -153,20 +156,51 @@ function var_value() {
     eval echo \$"${var}"
 }
 
-function main() {
-    [[ $TRACE ]] && set -x
+function perl_match() {
+    perl - "$TEMPLATE_CONTENT" $1 <<'EOF'
+    my $string = shift; 
+    my $index = shift;
+    my $regex = qr/\s*{%\s*if\s*(.*?(?=%}))%}(.*?(?={%))(\s*{%\s*else\s*%})?(.*?(?={%))\s*{%\s*endif\s*%}/sp;
+    my @matches = ( $string =~ /$regex/ );
+    if (! @matches) {
+        exit 1;
+    }
+    if ( $index ==   -1 ){
+        # if ($string =~ /$regex/ ) {
+        print "${^MATCH}";
+        # }
+        # print "${^PREMATCH}";
+        # print "${^POSTMATCH}";
+    }
+    else{
+        print "@matches[$index]";
+    }
+EOF
+}
 
-    template="$1"
-    # exprs=$(grep -oE '\{%.*%\}' "$template")
-    # echo "$exprs"
-    vars=$(grep -oE '\{\{[[:space:]]*[A-Za-z0-9_]+[[:space:]]*\}\}' "$template" | sort | uniq | sed -e 's/^{{//' -e 's/}}$//')
+function replace_ifs() {
+    while perl_match -1 /dev/null 2>&1; do
+        match=$(perl_match -1) > /dev/null
+        condition=$(perl_match 0) > /dev/null
+        case_true=$(perl_match 1) > /dev/null
+        case_false=$(perl_match 3) > /dev/null
+        if eval "$condition"; then
+            replace="$case_true"
+        else
+            replace="$case_false"
+        fi
+        TEMPLATE_CONTENT="${TEMPLATE_CONTENT/"$match"/$replace}"
+    done
+}
 
-    if [[ -z "$vars" ]] && [[ "$silent" == "false" ]]; then
-        echo "Warning: No variable was found in $template, syntax is {{VAR}}" >&2
-    fi
+function render(){
+    vars=$(echo "$TEMPLATE_CONTENT" | grep -oE '\{\{[[:space:]]*[A-Za-z0-9_]+[[:space:]]*\}\}' | sort | uniq | sed -e 's/^{{//' -e 's/}}$//')
 
-    if [[ -f ".env" ]]; then
-        load_env_file ".env"
+    if [[ -z "$vars" ]]; then
+        if [[ "$silent" == "false" ]]; then
+            echo "Warning: No variable was found in $template, syntax is {{VAR}}" >&2
+        fi
+        return 0
     fi
 
     declare -a replaces
@@ -175,7 +209,7 @@ function main() {
     # Reads default values defined as {{VAR=value}} and delete those lines
     # There are evaluated, so you can do {{PATH=$HOME}} or {{PATH=`pwd`}}
     # You can even reference variables defined in the template before
-    defaults=$(grep -oE '^\{\{[A-Za-z0-9_]+=.+\}\}$' "${template}" | sed -e 's/^{{//' -e 's/}}$//')
+    defaults=$(echo "$TEMPLATE_CONTENT" | grep -oE '^\{\{[A-Za-z0-9_]+=.+\}\}$' | sed -e 's/^{{//' -e 's/}}$//')
     IFS=$'\n'
     for default in $defaults; do
         var=$(echo "${default}" | grep -oE "^[A-Za-z0-9_]+")
@@ -213,6 +247,7 @@ function main() {
     fi
 
     # Replace all {{VAR}} by $VAR value
+
     for var in $vars; do
         value="$(var_value "${var}")"
         if [[ -z "$value" ]] && [[ "$silent" == "false" ]]; then
@@ -225,7 +260,22 @@ function main() {
         replaces+=("s/{{[[:space:]]*${var}[[:space:]]*}}/${value}/g")
     done
     
-    sed "${replaces[@]}" "${template}"
+    TEMPLATE_CONTENT="$(echo "$TEMPLATE_CONTENT" | sed "${replaces[@]}")"
+
+}
+
+function main() {
+    [[ $TRACE ]] && set -x
+    local template_path
+    template_path="$1"
+    TEMPLATE_CONTENT="$(cat "$1")"
+    if [[ -f ".env" ]]; then
+        load_env_file ".env"
+    fi
+    replace_ifs > /dev/null 2>&1
+    render
+    echo "$TEMPLATE_CONTENT"
+    # exit 1
 
 }
 

@@ -1,0 +1,13 @@
+apiVersion: v1
+spec:
+    template:
+        spec:
+        {% if [[ $SPIDER == "play" ]] %}
+            args: ['master', '4', 'play']
+        {% else       %}
+            args: ['crawl', '{{SPIDER}}']
+        {%        endif %}
+
+{% if [[ ! $OMIT_SERVICE ]] %}
+....Service junk here....
+{%    endif    %}

@@ -19,6 +19,7 @@ spec:
         image: johnsmith/templater:latest
         ports:
         - containerPort: 80
+
 ---
 
 apiVersion: v1
