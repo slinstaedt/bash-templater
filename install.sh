@@ -1,21 +1,22 @@
 #!/bin/bash
 set -euo pipefail
 
-if [[ ! -d ~/.local/bin ]]; then
-    echo "~/.local/bin not found. Aborting";
-    exit 1
+INSTALLATION_LOC="$HOME/.local/bin"
+
+if [[ ! -d "$INSTALLATION_LOC" ]]; then
+    INSTALLATION_LOC="/usr/local/bin"
 fi
 
 curl -o /tmp/templater https://raw.githubusercontent.com/owenstranathan/bash-templater/master/templater.sh
 
 if ! [ -x "$(command -v install)" ]; then
     chmod +x /tmp/templater
-    mv /tmp/templater ~/.local/bin/templater
+    mv /tmp/templater "$INSTALLATION_LOC/templater"
 else
-    install /tmp/templater ~/.local/bin/templater
+    install /tmp/templater "$INSTALLATION_LOC/templater"
 fi
 
-if [[ ! -f "$HOME/.local/bin/templater" ]]; then
+if [[ ! -f "$INSTALLATION_LOC/templater" ]]; then
     echo "Installation failed! Install manually."
 else
     echo "Installation succeeded use templater with \`templater\`"
