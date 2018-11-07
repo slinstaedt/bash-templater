@@ -44,7 +44,6 @@ function test_print_only(){
         return $?
     )
 }
-
 function test_silent(){
 
     mkdir -p "test_silent_temp"
@@ -52,7 +51,7 @@ function test_silent(){
     (
         cd test_silent_temp
         echo "{{TEST_SILENT_NOT_SET}} is not set" > test.tmpl
-        diff <(bash $PACKAGE_DIR/templater.sh test.tmpl -s) <(echo " is not set")
+        diff <(bash "$PACKAGE_DIR/templater.sh" test.tmpl -s) <(echo " is not set")
         return $?
     )
 }

@@ -75,9 +75,9 @@ function load_env_file() {
     if [[ -f "$env_file" ]]; then
         local variables
         if [[ "$BSD" ]]; then
-            variables=$(grep -v '^#' "$env_file" | xargs -0)
+            variables=$(grep -v '^#' "$env_file" | grep -v '^\w*$' | xargs -0)
         else
-            variables=$(grep -v '^#' "$env_file" | xargs -d '\n')
+            variables=$(grep -v '^#' "$env_file" | grep -v '^\w*$' | xargs -d '\n')
         fi
         for var in $variables; do
             export "${var?}"
