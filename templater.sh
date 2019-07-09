@@ -283,13 +283,16 @@ parse_args "$@"
 if [[ -f "$template_path" ]]; then
   main "$template_path"
 elif [[ -d "$template_path" ]]; then
-  read -r -a templates <<< $(find "$template_path" -mindepth 1)
-  len=${#templates[@]}
-  len=$((len-1))
-  for i in $(seq 0 $len); do
-    main "${templates[i]}"
-    if [ $i -lt $len ]; then
-      echo -e "$delimiter"
-    fi
-  done
+  {
+    shopt -s globstar nullglob
+    templates=( "$template_path/"* )
+    len=${#templates[@]}
+    len=$((len-1))
+    for i in $(seq 0 $len); do
+        main "${templates[i]}"
+        if [ $i -lt $len ]; then
+        echo -e "$delimiter"
+        fi
+    done
+  }
 fi
