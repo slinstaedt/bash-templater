@@ -13,19 +13,8 @@ in templates
 To install templater on linux or mac type:
 
 ```
-$ mkdir -p ~/.local/bin/
-$ sudo curl -L https://raw.githubusercontent.com/owenstranathan/bash-templater/master/templater.sh -o ~/.local/bin/templater
-$ sudo chmod +x ~/.local/bin/templater
+$ PREFIX=/usr/local/bin make install
 ```
-
-Alternately if you have the program `install` 
-on your system you can use that with curl
-```
-$ mkdir -p ~/.local/bin/
-$ curl https://raw.githubusercontent.com/owenstranathan/bash-templater/master/templater.sh
-$ install templater.sh ~/.local/bin/templater
-```
-if you haven't configured ~/.local/bin to be a part of your path I recommed doing that
 
 
 ## Usage
