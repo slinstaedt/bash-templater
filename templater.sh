@@ -40,7 +40,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-usage="${PROGNAME} [-h] [-d] [-f] [-s] -- 
+usage="${PROGNAME} [-h] [-d] [-f] [-s] [-o] [-r] -- 
 
 where:
     -h, --help
@@ -53,6 +53,10 @@ where:
         Don't print warning messages (for example if no variables are found)
     -d, --delimiter
         Specify a delimiter to separate output from multiple files (defaults to '\n---\n')
+    -o --output
+        Specify to write the output to files in the given directory instead of stdout
+    -r --recursive
+        Searches recursively for files in the template directory
 
 examples:
     VAR1=Something VAR2=1.2.3 ${PROGNAME} test.txt 
@@ -113,8 +117,14 @@ function parse_args() {
                     silent="true"
                     ;;
                 -d|--delimiter)
-                   delimiter="$2"
-                   ;;
+                    delimiter="$2"
+                    ;;
+                -o|--output)
+                    output="$2"
+                    ;;
+                -r|--recursive)
+                    recursive="true"
+                    ;;
                 --)
                     break
                     ;;
@@ -261,7 +271,6 @@ function render(){
     done
     
     TEMPLATE_CONTENT="$(echo "$TEMPLATE_CONTENT" | sed "${replaces[@]}")"
-
 }
 
 function main() {
@@ -274,9 +283,13 @@ function main() {
     fi
     replace_ifs > /dev/null 2>&1
     render
-    echo "$TEMPLATE_CONTENT"
+    if [ -z "$output" ]; then
+        echo "$TEMPLATE_CONTENT"
+    else
+        mkdir -p $(dirname "$output/$template_path")
+        echo "$TEMPLATE_CONTENT" >> "$output/$template_path"
+    fi
     # exit 1
-
 }
 
 parse_args "$@"
@@ -285,13 +298,18 @@ if [[ -f "$template_path" ]]; then
 elif [[ -d "$template_path" ]]; then
   {
     shopt -s globstar nullglob
-    templates=( "$template_path/"* )
-    len=${#templates[@]}
-    len=$((len-1))
-    for i in $(seq 0 $len); do
-        main "${templates[i]}"
-        if [ $i -lt $len ]; then
-        echo -e "$delimiter"
+    if [ "$recursive" == "true" ]; then
+        templates=$(find "$template_path")
+    else
+        templates="$template_path/"*
+    fi
+    for tpl in $templates; do
+        if [ -f "$tpl" ]; then
+            if [ -n "$delim_needed" ] && [ -z "$output" ]; then
+                echo -e "$delimiter"
+            fi
+            delim_needed="true"
+            main "$tpl"
         fi
     done
   }
